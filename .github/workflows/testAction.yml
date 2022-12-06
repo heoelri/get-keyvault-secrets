@@ -1,4 +1,4 @@
-name: 'build-test'
+name: 'Test get-keyvault-secret action'
 on:
   push:
     branches:
@@ -8,7 +8,6 @@ on:
       - main
   workflow_dispatch:
     
-
 jobs:
   build: 
     runs-on: ubuntu-latest
@@ -16,18 +15,15 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - name: 'Build get-keyvault-secret action'
-        uses: tool3/ncc@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          src: 'lib/main.js'
+      - name: 'Build action code'
+        run: npm install
 
       - name: 'Login into Azure'
         uses: Azure/login@v1
         with:
           creds: '{"clientId":"${{ secrets.AZUREAD_CLIENT_ID }}","clientSecret":"${{ secrets.AZUREAD_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZUREAD_TENANT_ID }}"}'
 
-      - uses: ./dist/index.js
+      - uses: ./
         name: 'Retrieve a secret from KeyVault'
         with:
           keyvault: GetKeyVaultSecretAction
