@@ -1,0 +1,27 @@
+name: 'Test get-keyvault-secret action'
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    
+jobs:
+  build: 
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v3
+
+      - name: 'Login into Azure'
+        uses: Azure/login@v1
+        with:
+          creds: '{"clientId":"${{ secrets.AZUREAD_CLIENT_ID }}","clientSecret":"${{ secrets.AZUREAD_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZUREAD_TENANT_ID }}"}'
+
+      - uses: ./
+        name: 'Retrieve a secret from KeyVault'
+        with:
+          keyvault: GetKeyVaultSecretAction
+          secrets: 'SampleSecret'
