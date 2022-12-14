@@ -1,18 +1,43 @@
 name: 'Build get-keyvault-secret action'
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
     
+env:
+  BRANCH_NAME: "release/compiled-code-${{ github.run_id }}"
+
 jobs:
   build: 
+    name: 'Build action code'
     runs-on: ubuntu-latest
     steps:
+
+      - uses: actions/checkout@v3
 
       - run: npm i -g @vercel/ncc
 
       - run: ncc build lib/main.js
+
+      - name: Push files to repo
+        shell: pwsh
+        run: |
+
+          # Set the name on the commits as it will appear in Github
+          git config --global user.name 'Github Action'
+          git config --global user.email 'alwayson@users.noreply.github.com'
+
+          git add ./dist/index.js
+
+          # Get the name of the commit that triggered the workflow, 
+          # so we can refer to it in our automated commit message.
+          $message = git log -1 --pretty=format:"%s"
+          # Only commit if there are changes to commit, otherwise commit will throw an error.
+          if(git status -uno --short) {
+            git commit -m "Auto update: $message"
+            git push --set-upstream origin ${{ env.BRANCH_NAME }}
+            gh pr create --title "Compiled action code" --body "The compiled action code was updated and needs to be merged to main."
+          } 
+          else {
+            Write-Output "No changes to commit. Bye."
+          }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
