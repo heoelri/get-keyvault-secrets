@@ -13,6 +13,10 @@ jobs:
 
       - uses: actions/checkout@v3
 
+      - name: Create a working branch
+        run: |
+          git checkout -b ${{ env.BRANCH_NAME }}
+
       - run: npm i -g @vercel/ncc
 
       - run: ncc build lib/main.js
